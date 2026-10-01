@@ -13,10 +13,10 @@
   <h1 class="title">LRU Image Cache</h1>
 
   <div class="stats">
-    <span class="stat">size {{ stats.size }} / {{ stats.capacity }}</span>
-    <span class="stat">hits {{ stats.hits }}</span>
-    <span class="stat">misses {{ stats.misses }}</span>
-    <span class="stat">evictions {{ stats.evictions }}</span>
+    <span class="stat" style="--i: 0">size {{ stats.size }} / {{ stats.capacity }}</span>
+    <span class="stat" style="--i: 1">hits {{ stats.hits }}</span>
+    <span class="stat" style="--i: 2">misses {{ stats.misses }}</span>
+    <span class="stat" style="--i: 3">evictions {{ stats.evictions }}</span>
   </div>
 
   <div class="controls">
@@ -37,40 +37,49 @@
   </div>
 
   <div class="panel">
-    <div class="chain">
-      <span class="endpoint">HEAD<span>MRU</span></span>
-      {% for entry in entries %}
-        <span class="arrow">&lt;&nbsp;&gt;</span>
-        <div class="entry
-             {% if entry.key == highlight_key %}entry-hit{% endif %}
-             {% if current and entry.key == current.key %}entry-current{% endif %}"
-             {% if entry.key == highlight_key %}data-animate="flash-hit"{% endif %}>
-          <img src="{{ entry.thumbnail_url }}" alt="{{ entry.title }}">
-          <div class="entry-title">{{ entry.title }}</div>
-          <div class="entry-key">{{ entry.key }}</div>
-          <div class="entry-actions">
-            <form method="post" action="{{ url_for('access_image', key=entry.key) }}">
-              <button class="btn btn-sm btn-outline-dark btn-thick" type="submit">Access</button>
-            </form>
-            <form method="post" action="{{ url_for('remove_image', key=entry.key) }}">
-              <button class="btn btn-sm btn-outline-danger btn-thick" type="submit">Remove</button>
-            </form>
+    <div class="stage">
+      <div class="rail-scroll">
+        <div class="rail">
+          <span class="endpoint">HEAD<span>MRU</span></span>
+
+          <div class="chain" id="chain">
+            {% for entry in entries %}
+              <div class="entry
+                   {% if entry.key == highlight_key %}entry-hit{% endif %}
+                   {% if current and entry.key == current.key %}entry-current{% endif %}"
+                   data-flip="{{ entry.key }}"
+                   style="--i: {{ loop.index0 }}"
+                   {% if entry.key == highlight_key %}data-animate="flash-hit"{% endif %}>
+                <img src="{{ entry.thumbnail_url }}" alt="{{ entry.title }}">
+                <div class="entry-title">{{ entry.title }}</div>
+                <div class="entry-key">{{ entry.key }}</div>
+                <div class="entry-actions">
+                  <form method="post" action="{{ url_for('access_image', key=entry.key) }}">
+                    <button class="btn btn-sm btn-outline-dark btn-thick" type="submit">Access</button>
+                  </form>
+                  <form method="post" action="{{ url_for('remove_image', key=entry.key) }}">
+                    <button class="btn btn-sm btn-outline-danger btn-thick" type="submit">Remove</button>
+                  </form>
+                </div>
+              </div>
+            {% endfor %}
           </div>
-        </div>
-      {% endfor %}
 
-      {% if ghost %}
-        <span class="arrow arrow-cut">x</span>
-        <div class="entry entry-ghost" data-animate="flash-ghost">
-          <img src="{{ ghost.thumbnail_url }}" alt="{{ ghost.title }}">
-          <div class="entry-title">{{ ghost.title }}</div>
-          <div class="entry-key">{{ ghost.key }}</div>
-          <div class="entry-tag">{{ ghost.kind }}</div>
-        </div>
-      {% endif %}
+          {% if ghost %}
+            <div class="detached">
+              <span class="cut">x</span>
+              <div class="entry entry-ghost" data-animate="flash-ghost">
+                <img src="{{ ghost.thumbnail_url }}" alt="{{ ghost.title }}">
+                <div class="entry-title">{{ ghost.title }}</div>
+                <div class="entry-key">{{ ghost.key }}</div>
+                <div class="entry-tag">{{ ghost.kind }}</div>
+              </div>
+            </div>
+          {% endif %}
 
-      <span class="arrow">&lt;&nbsp;&gt;</span>
-      <span class="endpoint">TAIL<span>LRU</span></span>
+          <span class="endpoint">TAIL<span>LRU</span></span>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -103,7 +112,7 @@
   <div class="panel">
     <ul class="events">
       {% for event in events %}
-        <li>{{ event }}</li>
+        <li style="--i: {{ loop.index0 }}">{{ event }}</li>
       {% else %}
         <li>empty</li>
       {% endfor %}
